@@ -1,0 +1,64 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+
+import LoginPage from '@/pages/auth/LoginPage';
+import SignupPage from '@/pages/auth/SignupPage';
+import HomePage from '@/pages/HomePage';
+import AgeVerification from '@/pages/AgeVerification';
+import Layout from '@/layouts/Layout';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import FooterPageRoute from '@/pages/FooterPageRoute';
+import SportsPage from './pages/SportPage';
+import MatchDetails from './pages/MatchDetails';
+import ForgetPassword from './pages/auth/ForgotPassword';
+
+export function App() {
+  return (
+    <Routes>
+      {/* Age verification */}
+      <Route path="/" element={<AgeVerification />} />
+
+      {/* Public authentication pages */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/forgot-password" element={<ForgetPassword />} />
+
+      {/* Protected application pages */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/home" element={<HomePage />} />
+
+          <Route path="/sport/inplay" element={<SportsPage />} />
+          <Route path="/sport/cricket" element={<SportsPage />} />
+          <Route path="/sport/football" element={<SportsPage />} />
+          <Route path="/sport/tennis" element={<SportsPage />} />
+          <Route path="/sport/kabaddi" element={<SportsPage />} />
+
+
+          <Route path="/match/:matchId" element={<MatchDetails />} />
+
+          <Route
+            path="/about"
+            element={<FooterPageRoute slug="about" />}
+          />
+          <Route
+            path="/rejection-and-decline"
+            element={<FooterPageRoute slug="rejection-and-decline" />}
+          />
+
+          <Route
+            path="/responsible-gaming"
+            element={<FooterPageRoute slug="responsible-gaming" />}
+          />
+
+          <Route
+            path="/terms-and-conditions"
+            element={<FooterPageRoute slug="terms-and-conditions" />}
+          />
+        </Route>
+      </Route>
+
+      {/* Unknown URL */}
+      <Route path="*" element={<Navigate to="/home" replace />} />
+    </Routes>
+  );
+}
