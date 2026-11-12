@@ -48,6 +48,7 @@ export const apiSlice = createApi({
     'StakeSet',
     'BetHistory',
     'OneClickBetting',
+    'Sport',
   ],
   endpoints: () => ({}),
 });

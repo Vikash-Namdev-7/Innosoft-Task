@@ -8,6 +8,7 @@ export {
   useToggleWithOutsideClick,
 } from './useOutsideClick';
 export { useLocalStorage } from './useLocalStorage';
+export { usePriceDropBlink, usePriceIncreaseBlink } from './usePriceDropBlink';
 
 // Redux hooks
-export { useAppDispatch, useAppSelector, useAuth, useIsAuthenticated } from './redux';
+export { useAppDispatch, useAppSelector, useAuth, useProfile, useIsAuthenticated } from './redux';

@@ -7,9 +7,11 @@ import AgeVerification from '@/pages/AgeVerification';
 import Layout from '@/layouts/Layout';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import FooterPageRoute from '@/pages/FooterPageRoute';
-import SportsPage from './pages/SportPage';
+import SportsPage from './pages/AllMatches';
 import MatchDetails from './pages/MatchDetails';
 import ForgetPassword from './pages/auth/ForgotPassword';
+import MyBets from './pages/MyBets';
+import Profile from './pages/Profile';
 
 export function App() {
   return (
@@ -27,11 +29,12 @@ export function App() {
         <Route element={<Layout />}>
           <Route path="/home" element={<HomePage />} />
 
+          <Route path="/my-bets" element={<MyBets />} />
+          <Route path="/profile" element={<Profile />} />
+
           <Route path="/sport/inplay" element={<SportsPage />} />
-          <Route path="/sport/cricket" element={<SportsPage />} />
-          <Route path="/sport/football" element={<SportsPage />} />
-          <Route path="/sport/tennis" element={<SportsPage />} />
-          <Route path="/sport/kabaddi" element={<SportsPage />} />
+          <Route path="/sport/:sportName" element={<SportsPage />} />
+          <Route path="/:sportName" element={<SportsPage />} />
 
 
           <Route path="/match/:matchId" element={<MatchDetails />} />

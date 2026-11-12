@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store';
+import { useGetMyProfileQuery, useGetMyWalletsQuery } from '@/store/api/userApi';
 
 type NavbarProps = {
   onMenuClick: () => void;
@@ -21,17 +22,31 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
+  // Only fetch when logged in
+  const { data: user } = useGetMyProfileQuery(undefined, { skip: !isAuthenticated });
+  const { data: wallets } = useGetMyWalletsQuery(undefined, { skip: !isAuthenticated });
+
+  // Pick the main wallet (first item or the one with type 'main')
+  const mainWallet = wallets?.find((w) => w.type === 'main') ?? wallets?.[0];
+
+  const displayName = user?.username ?? 'User';
+  const balance = (mainWallet?.balance ?? 0).toFixed(2);
+  const exposure = (mainWallet?.exposure ?? 0).toFixed(2);
+  // API may return bonusBalance (camelCase) or bonus_balance (snake_case)
+  const bonusBalanceRaw = mainWallet?.bonusBalance ?? mainWallet?.bonus_balance ?? 0;
+  const bonusBalance = Number(bonusBalanceRaw).toFixed(2);
+
   return (
     <div className="flex h-full w-full items-center justify-between gap-2 bg-[#0c1a37] px-3">
       {/* Logo and navigation */}
       <div className="flex min-w-0 items-center gap-2">
-        {/* Hamburger: mobile only */}
+        {/* Hamburger: visible whenever sidebar is collapsed (< xl) */}
         <button
           type="button"
           onClick={onMenuClick}
           aria-label="Toggle sidebar"
           aria-controls="responsive-sidebar"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-white transition-colors hover:bg-white/10 lg:hidden"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-white transition-colors hover:bg-white/10 xl:hidden"
         >
           <svg
             viewBox="0 0 24 24"
@@ -79,19 +94,17 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
       {/* Login and Signup */}
 
       {isAuthenticated ? (
-        <div className="flex items-center gap-3 rounded-md  px-4 py-2 text-white">
-          <div className="flex flex-col text-sm">
-            <div className="flex gap-3">
-              <span>Bal: 1000.00</span>
-              <span>Demo User</span>
-            </div>
-
-            <div className="flex gap-3">
-              <span>Exp: 0.00</span>
-              <span>Bonus Bal: 0.00</span>
-            </div>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/profile')}
+          className="grid shrink-0 cursor-pointer grid-cols-[auto_auto] items-center gap-x-3 gap-y-0.5 rounded-md px-2 py-1 text-left text-xs leading-tight whitespace-nowrap text-white transition hover:bg-white/10 sm:px-3 sm:text-sm"
+          title="Go to Profile"
+        >
+          <span>Bal: {balance}</span>
+          <span className="font-semibold text-sky-400">{displayName}</span>
+          <span className="text-gray-300">Exp: {exposure}</span>
+          <span className="text-gray-300">Bonus Bal: {bonusBalance}</span>
+        </button>
       ) : (
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <button

@@ -98,9 +98,9 @@ const IndianCasino = () => {
   };
 
   return (
-    <section className="w-full min-w-0 px-4 pb-4">
+    <section className="w-full min-w-0 px-2.5 pb-3 sm:px-4 sm:pb-4">
       <div className="mb-1 flex items-center justify-between gap-3">
-        <h1 className="italic px-2 text-xl tracking-tight sm:text-2xl font-bold">INDIAN CASINO</h1>
+        <h1 className="italic px-1 text-xl tracking-tight sm:text-2xl font-bold">INDIAN CASINO</h1>
 
         <div className="flex shrink-0 gap-2">
           <button
@@ -108,43 +108,42 @@ const IndianCasino = () => {
             onClick={() => scroll('left')}
             aria-label="Previous games"
             disabled={!canScrollLeft}
-            className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-r from-teal-500 to-cyan-700 transition hover:brightness-110"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-r from-teal-500 to-cyan-700 transition hover:brightness-110 disabled:opacity-40"
           >
-            <IoChevronBack size={24} />
+            <IoChevronBack size={20} />
           </button>
 
           <button
             type="button"
             onClick={() => scroll('right')}
             aria-label="Next games"
-            className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-r from-teal-500 to-cyan-700 transition hover:brightness-110"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-r from-teal-500 to-cyan-700 transition hover:brightness-110"
           >
-            <IoChevronForward size={24} />
+            <IoChevronForward size={20} />
           </button>
         </div>
       </div>
 
-      <div className="relative mb-3 h-[3px] w-full bg-white/30">
-        <div className="absolute left-0 top-0 h-[4px] w-16 rounded-full bg-white" />
+      <div className="relative mb-3 h-[2px] w-full bg-white/30">
+        <div className="absolute left-0 top-0 h-[3px] w-16 rounded-full bg-white" />
       </div>
 
       {/* Game Cards */}
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex gap-2.5 sm:gap-3 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {indianCasinoGames.map((game) => (
           <div
             key={game.id}
-            className="group relative flex-none overflow-hidden rounded-2xl bg-gray-900"
+            className="group relative flex-none w-[115px] sm:w-[135px] md:w-[155px] overflow-hidden rounded-2xl bg-gray-900 shadow-md"
           >
             <img
               src={game.image}
               alt="Indian Casino Image"
               loading="lazy"
-              className="h-[200px] object-cover transition duration-300 group-hover:scale-105"
+              className="h-[155px] sm:h-[185px] md:h-[210px] w-full object-cover transition duration-300 group-hover:scale-105"
             />
-
           </div>
         ))}
       </div>

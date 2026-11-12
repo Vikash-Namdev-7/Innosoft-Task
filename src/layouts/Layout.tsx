@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 
 import Navbar from '@/components/common/Navbar';
 import Sidebar from '@/components/common/Sidebar';
+import BottomNavbar from '@/components/common/BottomNavbar';
 import TrendingGamesSidebar from '@/components/sports/TrendingGamesSidebar';
 import BetSection from '@/components/sports/BetSection';
 
@@ -10,12 +11,22 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { pathname } = useLocation();
 
+  const isProfile = pathname === '/profile';
+
   const hideRightSidebar =
-    pathname === '/home' || pathname === '/casino' || pathname === '/about' || pathname === '/rejection-and-decline' || pathname === '/responsible-gaming'  || pathname === '/terms-and-conditions'  || pathname.startsWith('/casino/');
+    pathname === '/home' ||
+    pathname === '/my-bets' ||
+    pathname === '/profile' ||
+    pathname === '/casino' ||
+    pathname === '/about' ||
+    pathname === '/rejection-and-decline' ||
+    pathname === '/responsible-gaming' ||
+    pathname === '/terms-and-conditions' ||
+    pathname.startsWith('/casino/');
 
   // Reset mobile menu state when switching to desktop width.
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const mediaQuery = window.matchMedia('(min-width: 1280px)');
 
     const handleResize = (event: MediaQueryListEvent) => {
       if (event.matches) {
@@ -62,11 +73,15 @@ const Layout = () => {
       </div>
 
       {/* Horizontal line below navbar */}
-      <div className="pointer-events-none fixed left-0 right-0 top-14 z-40 hidden h-px bg-white/70 lg:left-[220px] lg:block" />
+      <div className="pointer-events-none fixed left-0 right-0 top-14 z-40 hidden h-px bg-white/70 xl:left-[220px] xl:block" />
 
       {/* Page Content */}
-      <main className="ml-0 h-dvh min-w-0 overflow-x-hidden overflow-y-auto pt-14 xl:ml-[220px]">
-        <div className="flex min-w-0 items-start gap-2 p-2 sm:p-2 lg:p-2">
+      <main className="ml-0 h-dvh min-w-0 overflow-x-hidden overflow-y-auto pb-16 pt-14 xl:ml-[220px] xl:pb-0">
+        <div
+          className={`flex min-w-0 items-start ${
+            isProfile ? 'p-0' : 'gap-2 p-2 sm:p-2 xl:p-2'
+          }`}
+        >
           {/* Main route content */}
           <section className="min-w-0 flex-1">
             <Outlet />
@@ -83,6 +98,9 @@ const Layout = () => {
           )}
         </div>
       </main>
+
+      {/* Bottom Navigation for small screens when sidebars collapse */}
+      <BottomNavbar />
     </div>
   );
 };

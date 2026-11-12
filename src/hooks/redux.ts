@@ -7,6 +7,7 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 // Convenience hooks for common state selections
 export const useAuth = () => useAppSelector((state) => state.auth);
+export const useProfile = () => useAppSelector((state) => state.profile);
 
 // Hook for checking authentication status
 export const useIsAuthenticated = () => useAppSelector((state) => state.auth.isAuthenticated);

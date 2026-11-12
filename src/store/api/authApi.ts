@@ -3,31 +3,6 @@ import { apiSlice } from './apiSlice';
 
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Login
-    // login: builder.mutation<
-    //   {
-    //     success: boolean;
-    //     accessToken?: string;
-    //     type: string;
-    //     role: { id: number; name: string };
-    //     passwordChanged: boolean;
-    //     mfaRequired?: boolean;
-    //     isTelegramEnabled?: boolean;
-    //   },
-    //   {
-    //     username: string;
-    //     password: string;
-    //     device: string;
-    //     isTermCondition: boolean;
-    //   }
-    // >({
-    //   query: (body) => ({
-    //     url: '/auth/login',
-    //     method: 'POST',
-    //     body,
-    //   }),
-    // }),
-
     //logout
     logout: builder.mutation<any, void>({
       query: () => ({
@@ -57,7 +32,7 @@ export const authApi = apiSlice.injectEndpoints({
       any,
       {
         mobile: string;
-        type: 'register' | 'forgot-password';
+        type?: string;
         email?: string;
         country?: string;
       }

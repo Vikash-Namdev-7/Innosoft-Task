@@ -132,6 +132,48 @@
   }
 }
 
+@keyframes marquee {
+  0% {
+    left: 80%;
+    transform: translate(0, -50%);
+  }
+  100% {
+    left: 0%;
+    transform: translate(-100%, -50%);
+  }
+}
+
+.animate-marquee {
+  position: absolute;
+  top: 50%;
+  white-space: nowrap;
+  animation: marquee 14s linear infinite;
+  will-change: left, transform;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes oddsBlinkYellow {
+  0% {
+    background-color: #facc15;
+    box-shadow: 0 0 14px rgba(250, 204, 21, 0.95);
+  }
+  50% {
+    background-color: #fde047;
+    box-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+  }
+  100% {
+    background-color: #facc15;
+    box-shadow: 0 0 14px rgba(250, 204, 21, 0.95);
+  }
+}
+
+.animate-odds-blink {
+  animation: oddsBlinkYellow 350ms ease-in-out;
+}
+
 
 
 /* Global scrollbar styling */

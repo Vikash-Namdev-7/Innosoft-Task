@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { FaGift } from 'react-icons/fa';
 import { sportsCategories } from '../../data/home-page/sport';
 
 type SportCategory = {
@@ -20,64 +21,47 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
       {/* Only this section scrolls */}
       <nav
         aria-label="Sports categories"
-        className="
-    min-h-0 min-w-0 flex-1
-    overflow-y-auto overflow-x-hidden
-    overscroll-y-contain
-    
-  "
+        className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain px-1.5 py-1.5"
       >
-        <div className="w-full min-w-0 space-y-1 px-1.5 py-1">
+        <div className="w-full min-w-0 space-y-[3px]">
           {categories.map((sport) => (
             <NavLink
               key={sport.id}
               to={sport.path}
               onClick={() => onNavigate?.()}
               className={({ isActive }) =>
-                `group relative flex min-h-[48px] w-full min-w-0 items-center gap-2.5 overflow-hidden rounded-md px-2.5 py-2 transition-colors duration-200 ${
+                `group relative flex h-[42px] w-full min-w-0 items-center gap-2.5 overflow-hidden rounded-[3px] border px-2.5 text-white transition-all duration-150 ${
                   isActive
-                    ? 'bg-sky-500/15 text-white'
-                    : 'text-slate-200 hover:bg-white/[0.06] hover:text-white'
+                    ? 'border-white bg-gradient-to-r from-[#255eb3] via-[#163c75] to-[#0d2242] shadow-sm'
+                    : 'border-white/85 bg-gradient-to-r from-[#1c4582] via-[#102a54] to-[#081529] hover:border-white hover:from-[#245399] hover:via-[#143569] hover:to-[#0c1f3d]'
                 }`
               }
             >
-              {({ isActive }) => (
+              {() => (
                 <>
-                  {isActive && (
-                    <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-cyan-400" />
-                  )}
-
                   {/* Sport icon */}
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                      isActive
-                        ? 'bg-gradient-to-br from-teal-400 to-blue-600'
-                        : 'bg-gradient-to-br from-teal-500 to-sky-600'
-                    }`}
-                  >
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-sky-600">
                     <img
                       src={sport.icon}
                       alt=""
                       aria-hidden="true"
                       loading="lazy"
                       decoding="async"
-                      className="h-6 w-6 max-w-full object-contain"
+                      className="h-5 w-5 max-w-full object-contain"
                     />
                   </span>
 
                   {/* Sport name */}
-                  <span className="min-w-0 flex-1 truncate text-[14px] font-medium leading-5">
+                  <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold leading-none text-white">
                     {sport.name}
                   </span>
-
-                  {isActive && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />}
                 </>
               )}
             </NavLink>
           ))}
 
           {/* Other menu */}
-          <div className="mb-2 mt-5 px-2.5 pt-1 text-[10px] font-bold uppercase tracking-[1.5px] text-slate-500">
+          <div className="mb-1 mt-3 px-1 text-[11px] font-bold uppercase tracking-[1.5px] text-slate-300">
             Other Menu
           </div>
 
@@ -85,38 +69,35 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
             to="/promotions"
             onClick={() => onNavigate?.()}
             className={({ isActive }) =>
-              `flex min-h-[48px] w-full min-w-0 items-center gap-2.5 overflow-hidden rounded-md px-2.5 py-2 transition-colors duration-200 ${
+              `group relative flex h-[42px] w-full min-w-0 items-center gap-2.5 overflow-hidden rounded-[3px] border px-2.5 text-white transition-all duration-150 ${
                 isActive
-                  ? 'bg-sky-500/15 text-white'
-                  : 'text-slate-200 hover:bg-white/[0.06] hover:text-white'
+                  ? 'border-white bg-gradient-to-r from-[#255eb3] via-[#163c75] to-[#0d2242] shadow-sm'
+                  : 'border-white/85 bg-gradient-to-r from-[#1c4582] via-[#102a54] to-[#081529] hover:border-white hover:from-[#245399] hover:via-[#143569] hover:to-[#0c1f3d]'
               }`
             }
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-sky-600">
-              <img
-                src="/sidebar/promotions.svg"
-                alt=""
-                aria-hidden="true"
-                className="h-6 w-6 object-contain"
-              />
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-sky-600">
+              <FaGift className="h-4 w-4 text-white" />
             </span>
 
-            <span className="min-w-0 flex-1 truncate text-[14px] font-medium">Promotions</span>
+            <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold leading-none text-white">
+              Promotions
+            </span>
           </NavLink>
         </div>
       </nav>
 
       {/* Telegram stays outside the scrollable area */}
-      <div className="w-full min-w-0 shrink-0 overflow-hidden border-t border-white/10 bg-[#0d1b36] p-2">
+      <div className="w-full min-w-0 shrink-0 overflow-hidden border-t border-white/10 bg-[#0d1b36] p-1.5">
         <a
           href="https://t.me/your_channel"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex min-h-10 w-full min-w-0 items-center justify-center gap-2 overflow-hidden rounded-lg bg-[#1478c9] px-2 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1688df] active:scale-[0.98]"
+          className="flex h-9 w-full min-w-0 items-center justify-center gap-2 overflow-hidden rounded-md bg-[#1478c9] px-2 text-xs font-semibold text-white transition-colors hover:bg-[#1688df] active:scale-[0.98]"
         >
           <svg
             viewBox="0 0 24 24"
-            className="h-5 w-5 shrink-0"
+            className="h-4 w-4 shrink-0"
             fill="currentColor"
             aria-hidden="true"
           >
