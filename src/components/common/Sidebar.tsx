@@ -57,35 +57,35 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-[#0d1b36] text-white">
-      {/* Logged-in User Profile Banner (matches reference design) */}
-      {isAuthenticated && (
-        <NavLink
-          to="/profile"
-          onClick={() => onNavigate?.()}
-          className="group flex w-full shrink-0 items-center gap-3 bg-gradient-to-r from-[#1746a2] via-[#1c55bd] to-[#0c1a36] px-3.5 py-3 border-b border-white/10 shadow-sm transition hover:brightness-110"
-          title="View Profile"
-        >
-          {/* Black Circular Avatar with Initial */}
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-black text-white shadow-sm ring-1 ring-white/10">
-            <span className="text-base sm:text-lg font-bold uppercase leading-none">
-              {avatarInitial}
-            </span>
-          </div>
-
-          {/* User Display Name */}
-          <div className="min-w-0 flex-1">
-            <span className="block truncate text-sm sm:text-[15px] font-semibold text-white tracking-wide">
-              {displayName}
-            </span>
-          </div>
-        </NavLink>
-      )}
-
-      {/* Only this section scrolls */}
+      {/* Scrollable area: banner & all sidebar categories scroll together */}
       <nav
         aria-label="Sports categories"
         className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain px-1.5 py-1.5"
       >
+        {/* Logged-in User Profile Banner (exact Image 2 design in blue theme) */}
+        {isAuthenticated && (
+          <NavLink
+            to="/profile"
+            onClick={() => onNavigate?.()}
+            className="-mx-1.5 -mt-1.5 mb-2 flex h-[72px] w-[calc(100%+12px)] shrink-0 items-center gap-3.5 bg-[#1258b8] px-4 shadow-sm transition hover:bg-[#104fa5] active:scale-[0.99]"
+            title="View Profile"
+          >
+            {/* Black Circular Avatar with Initial (exact Image 2 style) */}
+            <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-black text-white shadow-sm">
+              <span className="text-xl sm:text-2xl font-bold uppercase leading-none">
+                {avatarInitial}
+              </span>
+            </div>
+
+            {/* User Display Name */}
+            <div className="min-w-0 flex-1">
+              <span className="block truncate text-[15px] sm:text-base font-semibold text-white tracking-wide">
+                {displayName}
+              </span>
+            </div>
+          </NavLink>
+        )}
+
         <div className="w-full min-w-0 space-y-[3px]">
           {categories.map((sport) => (
             <NavLink
