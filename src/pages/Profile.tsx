@@ -29,9 +29,12 @@ import {
 } from '@/store/api/userApi';
 
 import { useSendOtpMutation, useChangePasswordMutation } from '@/store/api/authApi';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store';
 
 export default function Profile() {
   const dispatch = useAppDispatch();
+  const isDemoUser = useSelector((state: RootState) => state.auth.isDemoUser);
 
   const {
     activeTab,
@@ -277,8 +280,9 @@ export default function Profile() {
     user?.username?.charAt(0)?.toUpperCase() ||
     'U';
 
-  const displayName =
-    user?.firstname && user?.lastname
+  const displayName = isDemoUser
+    ? 'demo_user'
+    : user?.firstname && user?.lastname
       ? `${user.firstname} ${user.lastname}`
       : user?.username ?? 'User';
 

@@ -38,6 +38,48 @@ export interface Wallet {
   type: string;
 }
 
+export interface TransactionItem {
+  id: string;
+  walletId?: string;
+  amount: string | number;
+  availableBalance?: string | number;
+  type: string;
+  entityId?: string | null;
+  context: string;
+  meta?: any;
+  narration: string;
+  utr?: string | null;
+  nonce?: string;
+  status: string;
+  remark?: string | null;
+  timestamp: string;
+  isCommissionSettled?: boolean;
+  currencyId?: number;
+  runningBalance?: number | string;
+}
+
+export interface TransactionPagination {
+  currentPage: number;
+  totalPage: number;
+  totalItems: number;
+  limit: number;
+}
+
+export interface TransactionsResponse {
+  data: TransactionItem[];
+  pagination: TransactionPagination;
+}
+
+export interface TransactionsQuery {
+  page?: number;
+  limit?: number;
+  fromDate?: string;
+  toDate?: string;
+  type?: string;
+  context?: string;
+  t?: number;
+}
+
 export const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get Profile
@@ -66,6 +108,28 @@ export const userApi = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    // Get Transactions / Account Statement
+    getMyTransactions: builder.query<TransactionsResponse, TransactionsQuery>({
+      query: (params) => {
+        const queryParams: Record<string, any> = {
+          t: params.t ?? Date.now(),
+          page: params.page ?? 1,
+          limit: params.limit ?? 10,
+        };
+        if (params.fromDate) queryParams.fromDate = params.fromDate;
+        if (params.toDate) queryParams.toDate = params.toDate;
+        if (params.type && params.type !== 'All') queryParams.type = params.type;
+        if (params.context && params.context !== 'All') queryParams.context = params.context;
+
+        return {
+          url: '/users/me/transactions',
+          method: 'GET',
+          params: queryParams,
+        };
+      },
+      providesTags: ['Transactions'],
+    }),
   }),
 });
 
@@ -73,4 +137,5 @@ export const {
   useGetMyProfileQuery,
   useUpdateMyProfileMutation,
   useGetMyWalletsQuery,
+  useGetMyTransactionsQuery,
 } = userApi;

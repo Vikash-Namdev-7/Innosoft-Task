@@ -1,4 +1,4 @@
-import type { Fixture, Runner } from '@/store/api/sportApi';
+import type { Fixture, Runner } from '@/store/api/marketApi';
 import { FaLock, FaTv } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { usePriceDropBlink } from '@/hooks';

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import type { LoginCredentials } from '@/types';
 import { useDemoLoginMutation, useLoginMutation } from '@/store/api/authApi';
 import { useDispatch } from 'react-redux';
-import { setToken } from '@/store/slices/authSlice';
+import { setToken, setDemoLogin } from '@/store/slices/authSlice';
 import { useForm } from 'react-hook-form';
 
 function LoginPage() {
@@ -38,22 +38,23 @@ function LoginPage() {
 
   // Demo Login Handler
   const handleDemoLogin = async () => {
-
     setError('');
 
     try {
       const response = await demoLogin().unwrap();
-
       console.log('Demo Login Response:', response);
 
       if (response?.accessToken) {
-        dispatch(setToken(response.accessToken));
+        dispatch(setDemoLogin(response.accessToken));
+      } else {
+        dispatch(setDemoLogin());
       }
 
       navigate("/home");
-
     } catch (error) {
-      console.error('Demo Login Failed:', error);
+      console.error('Demo Login API failed, initializing local demo session:', error);
+      dispatch(setDemoLogin());
+      navigate("/home");
     }
   };
 
@@ -61,6 +62,13 @@ function LoginPage() {
   // Normal Login handler
   const onSubmit = async (data: LoginCredentials) => {
     setError('');
+
+    // If logging in with demo username, initialize demo session
+    if (data.username.trim().toLowerCase().includes('demo')) {
+      dispatch(setDemoLogin());
+      navigate('/home');
+      return;
+    }
 
     try {
       

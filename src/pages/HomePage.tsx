@@ -1,5 +1,6 @@
 import IndianCasino from "@/components/home/IndianCasino";
 import TrandingGames from "@/components/home/TrandingGames";
+import PopularMatches from "@/components/home/PopularMatches";
 
 import Games from "@/components/common/Games";
 
@@ -42,6 +43,8 @@ const HomePage = () => {
           />
         </div>
       </div>
+
+      <PopularMatches />
 
       <IndianCasino />
       <TrandingGames />

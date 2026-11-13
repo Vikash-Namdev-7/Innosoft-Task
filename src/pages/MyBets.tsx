@@ -1,26 +1,18 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store';
 import {
   IoDocumentTextOutline,
   IoReload,
   IoChevronDown,
   IoCalendarOutline,
 } from 'react-icons/io5';
+import {
+  useGetBetHistoryQuery,
+  type BetHistoryItem,
+} from '@/store/api/marketApi';
 
-interface CurrentBetRecord {
-  id: string;
-  placeDate: string;
-  sportName: string;
-  eventName: string;
-  market: string;
-  betType: 'Back' | 'Lay';
-  selection: string;
-  userRate: number;
-  amount: number;
-  liability: number;
-  potentialProfit: number;
-}
-
-interface PastBetRecord {
+interface BetDisplayRecord {
   id: string;
   placeDate: string;
   settledAt: string;
@@ -31,8 +23,10 @@ interface PastBetRecord {
   selection: string;
   userRate: number;
   amount: number;
+  liability: number;
+  potentialProfit: number;
   profitLoss: number;
-  status: 'Won' | 'Lost' | 'Void' | 'Settled';
+  status: string;
 }
 
 const CURRENT_BET_HEADERS = [
@@ -61,6 +55,20 @@ const PAST_BET_HEADERS = [
   'Profit/Loss',
   'Status',
 ];
+
+// Helper to format values to exactly 2 decimal places
+const format2Decimals = (val: number | string | undefined | null): string => {
+  if (val == null || val === '') return '0.00';
+  const num = Number(val);
+  return isNaN(num) ? String(val) : num.toFixed(2);
+};
+
+const getTodayString = (): string => new Date().toISOString().split('T')[0] ?? '';
+const getPastDateString = (daysAgo: number): string => {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toISOString().split('T')[0] ?? '';
+};
 
 // Interactive Date Picker Dropdown Pill
 function DatePickerPill({
@@ -111,39 +119,191 @@ function DatePickerPill({
 }
 
 export default function MyBets() {
+  const isDemoUser = useSelector((state: RootState) => state.auth.isDemoUser);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
   const [activeTab, setActiveTab] = useState<'current' | 'past'>('current');
   const [selectedSport, setSelectedSport] = useState('All');
-  const [startDate, setStartDate] = useState('2026-10-30');
-  const [endDate, setEndDate] = useState('2026-11-06');
+  const [startDate, setStartDate] = useState(() => getPastDateString(7));
+  const [endDate, setEndDate] = useState(() => getTodayString());
   const [pageSize, setPageSize] = useState('10');
   const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Mock states for current & past bets
-  const [currentBets] = useState<CurrentBetRecord[]>([]);
-  const [pastBets] = useState<PastBetRecord[]>([]);
+  // Date filters in ISO format for Bet History API
+  const fromDate = useMemo(() => {
+    if (!startDate || activeTab === 'current') return undefined;
+    try {
+      const d = new Date(startDate);
+      d.setHours(0, 0, 0, 0);
+      return d.toISOString();
+    } catch {
+      return undefined;
+    }
+  }, [startDate, activeTab]);
 
-  const handleRefresh = () => {
+  const toDate = useMemo(() => {
+    if (!endDate || activeTab === 'current') return undefined;
+    try {
+      const d = new Date(endDate);
+      d.setHours(23, 59, 59, 999);
+      return d.toISOString();
+    } catch {
+      return undefined;
+    }
+  }, [endDate, activeTab]);
+
+  const betTime: 'CURRENT' | 'PAST' = activeTab === 'current' ? 'CURRENT' : 'PAST';
+
+  // Query Bet History API with pagination and filters
+  const {
+    data: historyResponse,
+    isLoading: isHistoryLoading,
+    isFetching: isHistoryFetching,
+    error: historyError,
+    refetch: refetchHistory,
+  } = useGetBetHistoryQuery(
+    {
+      page: currentPage,
+      limit: Number(pageSize) || 10,
+      betTime,
+      ...(fromDate ? { fromDate } : {}),
+      ...(toDate ? { toDate } : {}),
+      ...(selectedSport && selectedSport !== 'All' ? { sport: selectedSport } : {}),
+    },
+    {
+      skip: !isAuthenticated,
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const handleRefresh = async () => {
     setIsRefreshing(true);
+    try {
+      await refetchHistory().unwrap();
+    } catch {}
     setTimeout(() => {
       setIsRefreshing(false);
     }, 600);
   };
+
+  // Reset page when tab, sport or page size changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, selectedSport, pageSize]);
+
+  // Combine API bets with local demo fallback (if in demo mode and API returns 0 items)
+  const displayBets: BetDisplayRecord[] = useMemo(() => {
+    const apiBets = historyResponse?.bets;
+    if (Array.isArray(apiBets) && apiBets.length > 0) {
+      return apiBets.map((b: BetHistoryItem) => {
+        const placeDateFormatted = b.placedAt
+          ? new Date(b.placedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+          : '-';
+        const settledAtFormatted = b.settledAt
+          ? new Date(b.settledAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+          : '-';
+        const isBack = String(b.betOn).toUpperCase() === 'BACK';
+        const amountNum = Number(b.amount) || 0;
+        const oddsNum = Number(b.odds) || 1;
+        const profitLossVal =
+          b.profitLoss ?? (b.payout !== undefined ? Number(b.payout) - amountNum : 0);
+
+        const liabilityVal =
+          b.liability ??
+          (isBack ? amountNum : Number((amountNum * Math.max(0, oddsNum - 1)).toFixed(2)));
+        const potentialProfitVal =
+          b.potentialProfit ??
+          (isBack ? Number((amountNum * Math.max(0, oddsNum - 1)).toFixed(2)) : amountNum);
+
+        return {
+          id: String(b.id),
+          placeDate: placeDateFormatted,
+          settledAt: settledAtFormatted,
+          sportName: b.sport || 'Cricket',
+          eventName: b.event?.name || 'Match',
+          market: b.marketName || 'Match Odds',
+          betType: isBack ? 'Back' : 'Lay',
+          selection: b.selection || 'Runner',
+          userRate: oddsNum,
+          amount: amountNum,
+          liability: liabilityVal,
+          potentialProfit: potentialProfitVal,
+          profitLoss: profitLossVal,
+          status: b.status || (activeTab === 'current' ? 'Pending' : 'Settled'),
+        };
+      });
+    }
+
+    // Local demo fallback for demo users when API has no records
+    if (isDemoUser && typeof window !== 'undefined') {
+      try {
+        const stored = JSON.parse(localStorage.getItem('demo_placed_bets') || '[]');
+        if (Array.isArray(stored)) {
+          return stored
+            .filter((b: any) => {
+              if (
+                selectedSport &&
+                selectedSport !== 'All' &&
+                b.sportName &&
+                b.sportName.toLowerCase() !== selectedSport.toLowerCase()
+              ) {
+                return false;
+              }
+              const isPending =
+                !b.status ||
+                b.status.toUpperCase() === 'OPEN' ||
+                b.status.toUpperCase() === 'PENDING';
+              return activeTab === 'current' ? isPending : !isPending;
+            })
+            .map((b: any) => ({
+              id: String(b.id),
+              placeDate: b.placeDate || new Date().toLocaleString('en-IN'),
+              settledAt: b.settledAt || '-',
+              sportName: b.sportName || 'Cricket',
+              eventName: b.eventName || 'Match',
+              market: b.market || 'Match Odds',
+              betType: b.betType === 'Lay' ? 'Lay' : 'Back',
+              selection: b.selection || 'Runner',
+              userRate: Number(b.userRate) || 1,
+              amount: Number(b.amount) || 0,
+              liability: Number(b.liability) || 0,
+              potentialProfit: Number(b.potentialProfit) || 0,
+              profitLoss: Number(b.profitLoss) || 0,
+              status: b.status || (activeTab === 'current' ? 'Pending' : 'Settled'),
+            }));
+        }
+      } catch {}
+    }
+
+    return [];
+  }, [historyResponse?.bets, isDemoUser, activeTab, selectedSport]);
+
+  const totalItems =
+    historyResponse?.pagination?.totalItems !== undefined
+      ? historyResponse.pagination.totalItems
+      : displayBets.length;
+
+  const totalPages =
+    historyResponse?.pagination?.totalPage !== undefined && historyResponse.pagination.totalPage > 0
+      ? historyResponse.pagination.totalPage
+      : Math.max(1, Math.ceil(totalItems / (Number(pageSize) || 10)));
 
   const sportsOptions = [
     'All',
     'Cricket',
     'Soccer',
     'Tennis',
-    'Kabaddi',
-    'Horse Racing',
-    'Greyhound Racing',
-    'Casino',
+    'Basketball',
+    'HorseRacing',
+    'Greyhound',
+    'Other',
   ];
 
   const headers = activeTab === 'current' ? CURRENT_BET_HEADERS : PAST_BET_HEADERS;
   const isCurrent = activeTab === 'current';
-  const hasBets = isCurrent ? currentBets.length > 0 : pastBets.length > 0;
+  const hasBets = displayBets.length > 0;
+  const isLoading = (isHistoryLoading || isHistoryFetching) && !isRefreshing;
 
   return (
     <div className="mx-auto w-full max-w-7xl p-2 sm:p-3">
@@ -178,8 +338,8 @@ export default function MyBets() {
           {/* Date range pickers (visible in Past Bet as per design) */}
           {!isCurrent && (
             <>
-              <DatePickerPill value={startDate} onChange={setStartDate} />
-              <DatePickerPill value={endDate} onChange={setEndDate} />
+              <DatePickerPill value={startDate ?? ''} onChange={setStartDate} />
+              <DatePickerPill value={endDate ?? ''} onChange={setEndDate} />
             </>
           )}
 
@@ -192,7 +352,7 @@ export default function MyBets() {
           >
             <IoReload
               className={`text-base transition-transform duration-500 ${
-                isRefreshing ? 'animate-spin' : ''
+                isRefreshing || isHistoryFetching ? 'animate-spin' : ''
               }`}
             />
           </button>
@@ -247,24 +407,45 @@ export default function MyBets() {
 
               {/* Table Body */}
               <tbody>
-                {!hasBets ? (
+                {isLoading ? (
+                  <tr className="h-20 bg-white">
+                    <td
+                      colSpan={headers.length}
+                      className="py-6 text-center text-xs font-semibold text-gray-700 sm:text-sm"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <IoReload className="animate-spin text-lg text-[#215bc9]" />
+                        <span>Loading bets...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : historyError && displayBets.length === 0 ? (
+                  <tr className="h-14 bg-white">
+                    <td
+                      colSpan={headers.length}
+                      className="py-4 text-center text-xs font-semibold text-red-600 sm:text-sm"
+                    >
+                      Unable to fetch bet history. Please try refreshing.
+                    </td>
+                  </tr>
+                ) : !hasBets ? (
                   <tr className="h-10 bg-white">
                     <td
                       colSpan={headers.length}
-                      className="py-3 text-center text-xs font-semibold text-gray-900 sm:text-sm"
+                      className="py-4 text-center text-xs font-semibold text-gray-900 sm:text-sm"
                     >
                       No bets placed yet
                     </td>
                   </tr>
                 ) : isCurrent ? (
-                  currentBets.map((bet) => (
+                  displayBets.map((bet) => (
                     <tr
                       key={bet.id}
                       className="border-t border-gray-200 bg-white text-xs text-gray-800 transition hover:bg-gray-50 sm:text-sm"
                     >
                       <td className="px-3 py-2 whitespace-nowrap">{bet.placeDate}</td>
                       <td className="px-3 py-2 whitespace-nowrap">{bet.sportName}</td>
-                      <td className="px-3 py-2 whitespace-nowrap">{bet.eventName}</td>
+                      <td className="px-3 py-2 whitespace-nowrap font-medium">{bet.eventName}</td>
                       <td className="px-3 py-2 whitespace-nowrap">{bet.market}</td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span
@@ -277,19 +458,19 @@ export default function MyBets() {
                           {bet.betType}
                         </span>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap">{bet.selection}</td>
+                      <td className="px-3 py-2 whitespace-nowrap font-medium">{bet.selection}</td>
                       <td className="px-3 py-2 whitespace-nowrap font-semibold">{bet.userRate}</td>
-                      <td className="px-3 py-2 whitespace-nowrap font-semibold">{bet.amount}</td>
+                      <td className="px-3 py-2 whitespace-nowrap font-semibold">{format2Decimals(bet.amount)}</td>
                       <td className="px-3 py-2 whitespace-nowrap font-semibold text-red-600">
-                        {bet.liability}
+                        {format2Decimals(bet.liability)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap font-semibold text-green-600">
-                        {bet.potentialProfit}
+                        {format2Decimals(bet.potentialProfit)}
                       </td>
                     </tr>
                   ))
                 ) : (
-                  pastBets.map((bet) => (
+                  displayBets.map((bet) => (
                     <tr
                       key={bet.id}
                       className="border-t border-gray-200 bg-white text-xs text-gray-800 transition hover:bg-gray-50 sm:text-sm"
@@ -297,7 +478,7 @@ export default function MyBets() {
                       <td className="px-3 py-2 whitespace-nowrap">{bet.placeDate}</td>
                       <td className="px-3 py-2 whitespace-nowrap">{bet.settledAt}</td>
                       <td className="px-3 py-2 whitespace-nowrap">{bet.sportName}</td>
-                      <td className="px-3 py-2 whitespace-nowrap">{bet.eventName}</td>
+                      <td className="px-3 py-2 whitespace-nowrap font-medium">{bet.eventName}</td>
                       <td className="px-3 py-2 whitespace-nowrap">{bet.market}</td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span
@@ -310,22 +491,22 @@ export default function MyBets() {
                           {bet.betType}
                         </span>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap">{bet.selection}</td>
+                      <td className="px-3 py-2 whitespace-nowrap font-medium">{bet.selection}</td>
                       <td className="px-3 py-2 whitespace-nowrap font-semibold">{bet.userRate}</td>
-                      <td className="px-3 py-2 whitespace-nowrap font-semibold">{bet.amount}</td>
+                      <td className="px-3 py-2 whitespace-nowrap font-semibold">{format2Decimals(bet.amount)}</td>
                       <td
                         className={`px-3 py-2 whitespace-nowrap font-semibold ${
                           bet.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {bet.profitLoss >= 0 ? `+${bet.profitLoss}` : bet.profitLoss}
+                        {bet.profitLoss >= 0 ? `+${format2Decimals(bet.profitLoss)}` : format2Decimals(bet.profitLoss)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span
                           className={`rounded px-2.5 py-0.5 text-xs font-bold ${
-                            bet.status === 'Won'
+                            bet.status?.toLowerCase() === 'won'
                               ? 'bg-green-100 text-green-700'
-                              : bet.status === 'Lost'
+                              : bet.status?.toLowerCase() === 'lost'
                                 ? 'bg-red-100 text-red-700'
                                 : 'bg-gray-100 text-gray-700'
                           }`}
@@ -359,20 +540,19 @@ export default function MyBets() {
           </div>
 
           {/* Active Page Number */}
-          <div className="flex items-center justify-center">
-            <button
-              type="button"
-              className="flex h-8 w-8 items-center justify-center rounded bg-[#215bc9] text-xs font-bold text-white shadow sm:text-sm"
-            >
+          <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
+            <span className="hidden sm:inline">Page</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded bg-[#215bc9] text-xs font-bold text-white shadow sm:text-sm">
               {currentPage}
-            </button>
+            </span>
+            <span className="hidden sm:inline">of {totalPages}</span>
           </div>
 
           {/* Previous / Next buttons */}
           <div className="flex items-center gap-2">
             <button
               type="button"
-              disabled={currentPage <= 1}
+              disabled={currentPage <= 1 || isLoading}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               className="flex h-8.5 sm:h-9 items-center gap-1 rounded-lg border border-[#234278] bg-[#050c18] px-3.5 text-xs font-semibold text-gray-300 transition hover:border-[#275cd1] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
             >
@@ -380,7 +560,7 @@ export default function MyBets() {
             </button>
             <button
               type="button"
-              disabled
+              disabled={currentPage >= totalPages || isLoading}
               onClick={() => setCurrentPage((p) => p + 1)}
               className="flex h-8.5 sm:h-9 items-center gap-1 rounded-lg border border-[#234278] bg-[#050c18] px-3.5 text-xs font-semibold text-gray-300 transition hover:border-[#275cd1] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
             >

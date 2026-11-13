@@ -21,20 +21,30 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
   const navigate = useNavigate();
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const isDemoUser = useSelector((state: RootState) => state.auth.isDemoUser);
+  const demoBalance = useSelector((state: RootState) => state.auth.demoBalance);
+  const demoExposure = useSelector((state: RootState) => state.auth.demoExposure);
 
   // Only fetch when logged in
   const { data: user } = useGetMyProfileQuery(undefined, { skip: !isAuthenticated });
-  const { data: wallets } = useGetMyWalletsQuery(undefined, { skip: !isAuthenticated });
+  const { data: wallets } = useGetMyWalletsQuery(undefined, {
+    pollingInterval: 2000,
+    skip: !isAuthenticated,
+  });
 
   // Pick the main wallet (first item or the one with type 'main')
   const mainWallet = wallets?.find((w) => w.type === 'main') ?? wallets?.[0];
 
-  const displayName = user?.username ?? 'User';
-  const balance = (mainWallet?.balance ?? 0).toFixed(2);
-  const exposure = (mainWallet?.exposure ?? 0).toFixed(2);
+  const displayName = isDemoUser
+    ? 'Demo User'
+    : user?.firstname
+    ? `${user.firstname} ${user.lastname ?? ''}`.trim()
+    : user?.username ?? 'User';
+  const balance = isDemoUser ? demoBalance.toFixed(2) : (mainWallet?.balance ?? 0).toFixed(2);
+  const exposure = isDemoUser ? demoExposure.toFixed(2) : (mainWallet?.exposure ?? 0).toFixed(2);
   // API may return bonusBalance (camelCase) or bonus_balance (snake_case)
   const bonusBalanceRaw = mainWallet?.bonusBalance ?? mainWallet?.bonus_balance ?? 0;
-  const bonusBalance = Number(bonusBalanceRaw).toFixed(2);
+  const bonusBalance = isDemoUser ? '0.00' : Number(bonusBalanceRaw).toFixed(2);
 
   return (
     <div className="flex h-full w-full items-center justify-between gap-2 bg-[#0c1a37] px-3">

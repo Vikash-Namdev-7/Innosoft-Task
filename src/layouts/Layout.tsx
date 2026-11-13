@@ -4,8 +4,9 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '@/components/common/Navbar';
 import Sidebar from '@/components/common/Sidebar';
 import BottomNavbar from '@/components/common/BottomNavbar';
-import TrendingGamesSidebar from '@/components/sports/TrendingGamesSidebar';
-import BetSection from '@/components/sports/BetSection';
+import TrendingGamesSidebar from '@/components/markets/TrendingGamesSidebar';
+import BetSection from '@/components/markets/BetSection';
+import WalletPolling from '@/components/common/WalletPolling';
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -17,12 +18,15 @@ const Layout = () => {
     pathname === '/home' ||
     pathname === '/my-bets' ||
     pathname === '/profile' ||
-    pathname === '/casino' ||
+    pathname === '/account-statement' ||
+    pathname === '/statement' ||
+    pathname.startsWith('/stake-settings') ||
+    pathname.startsWith('/stack-settings') ||
+    pathname.startsWith('/casino') ||
     pathname === '/about' ||
     pathname === '/rejection-and-decline' ||
     pathname === '/responsible-gaming' ||
-    pathname === '/terms-and-conditions' ||
-    pathname.startsWith('/casino/');
+    pathname === '/terms-and-conditions';
 
   // Reset mobile menu state when switching to desktop width.
   useEffect(() => {
@@ -46,6 +50,9 @@ const Layout = () => {
 
   return (
     <div className="h-dvh w-full overflow-hidden bg-black text-white">
+      {/* 2-second background wallet polling across all pages in Layout */}
+      <WalletPolling />
+
       {/* Navbar */}
       <header className="fixed inset-x-0 top-0 z-50 h-14 bg-[#0d1b36]">
         <Navbar onMenuClick={() => setSidebarOpen((open) => !open)} />
@@ -89,7 +96,7 @@ const Layout = () => {
 
           {/* Right sidebar */}
           {!hideRightSidebar && (
-            <aside className="hidden w-80 shrink-0 lg:block">
+            <aside className="hidden w-80 shrink-0 space-y-2 lg:block">
               {/* Bet Section: only on Match Details page */}
               {isMatchFetailsPage && <BetSection />}
 

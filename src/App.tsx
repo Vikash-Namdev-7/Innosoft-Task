@@ -12,56 +12,66 @@ import MatchDetails from './pages/MatchDetails';
 import ForgetPassword from './pages/auth/ForgotPassword';
 import MyBets from './pages/MyBets';
 import Profile from './pages/Profile';
+import StakeSettings from './pages/StakeSettings';
+import AccountStatement from './pages/AccountStatement';
 
 export function App() {
   return (
-    <Routes>
-      {/* Age verification */}
-      <Route path="/" element={<AgeVerification />} />
+    <>
 
-      {/* Public authentication pages */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/forgot-password" element={<ForgetPassword />} />
+      <Routes>
+        {/* Age verification */}
+        <Route path="/" element={<AgeVerification />} />
 
-      {/* Protected application pages */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<Layout />}>
-          <Route path="/home" element={<HomePage />} />
+        {/* Public authentication pages */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgetPassword />} />
 
-          <Route path="/my-bets" element={<MyBets />} />
-          <Route path="/profile" element={<Profile />} />
+        {/* Protected application pages */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/home" element={<HomePage />} />
 
-          <Route path="/sport/inplay" element={<SportsPage />} />
-          <Route path="/sport/:sportName" element={<SportsPage />} />
-          <Route path="/:sportName" element={<SportsPage />} />
+            <Route path="/my-bets" element={<MyBets />} />
+            <Route path="/profile" element={<Profile />} />
+
+            <Route path="/sport/inplay" element={<SportsPage />} />
+            <Route path="/sport/:sportName" element={<SportsPage />} />
+            <Route path="/:sportName" element={<SportsPage />} />
 
 
-          <Route path="/match/:matchId" element={<MatchDetails />} />
+            <Route path="/match/:matchId" element={<MatchDetails />} />
 
-          <Route
-            path="/about"
-            element={<FooterPageRoute slug="about" />}
-          />
-          <Route
-            path="/rejection-and-decline"
-            element={<FooterPageRoute slug="rejection-and-decline" />}
-          />
+            <Route path="/stake-settings" element={<StakeSettings />} />
+            <Route path="/stack-settings" element={<Navigate to="/stake-settings" replace />} />
+            <Route path="/account-statement" element={<AccountStatement />} />
+            <Route path="/statement" element={<Navigate to="/account-statement" replace />} />
 
-          <Route
-            path="/responsible-gaming"
-            element={<FooterPageRoute slug="responsible-gaming" />}
-          />
+            <Route
+              path="/about"
+              element={<FooterPageRoute slug="about" />}
+            />
+            <Route
+              path="/rejection-and-decline"
+              element={<FooterPageRoute slug="rejection-and-decline" />}
+            />
 
-          <Route
-            path="/terms-and-conditions"
-            element={<FooterPageRoute slug="terms-and-conditions" />}
-          />
+            <Route
+              path="/responsible-gaming"
+              element={<FooterPageRoute slug="responsible-gaming" />}
+            />
+
+            <Route
+              path="/terms-and-conditions"
+              element={<FooterPageRoute slug="terms-and-conditions" />}
+            />
+          </Route>
         </Route>
-      </Route>
 
-      {/* Unknown URL */}
-      <Route path="*" element={<Navigate to="/home" replace />} />
-    </Routes>
+        {/* Unknown URL */}
+        <Route path="*" element={<Navigate to="/home" replace />} />
+      </Routes>
+    </>
   );
 }

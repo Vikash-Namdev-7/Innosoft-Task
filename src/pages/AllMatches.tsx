@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { IoClose } from 'react-icons/io5';
 import { sportsCategories } from '@/data/home-page/sport';
-import MatchCard from '@/components/sports/MatchCard';
-import { useGetFixturesQuery } from '@/store/api/sportApi';
+import MatchCard from '@/components/markets/MatchCard';
+import { useGetFixturesQuery } from '@/store/api/marketApi';
 import { useLocation } from 'react-router-dom';
 
 export default function allMatches() {
